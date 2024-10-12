@@ -3,8 +3,9 @@ import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
-	optimizeDeps: {
-		exclude: [".vite"],
+	optimizeDeps: { exclude: ["node_modules/.cache"] },
+	server: {
+		port: 2666,
 	},
 	plugins: [
 		react(),
