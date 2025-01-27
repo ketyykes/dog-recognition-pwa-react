@@ -3,27 +3,27 @@ import * as tf from "@tensorflow/tfjs";
 import * as mobilenet from "@tensorflow-models/mobilenet";
 import { Dog, Upload, X } from "lucide-react";
 import { breedDictionary } from "./breedDictionary";
-// Chinese-English dictionary for dog breeds
 
 function App() {
-	const [model, setModel] = useState<mobilenet.MobileNet | null>(null);
+	const [model, setModel] = useState<mobilenet.MobileNet | null>(null); // 存儲加載的模型
 	const [prediction, setPrediction] = useState<{
 		breed: string;
 		probability: number;
 	} | null>(null);
 	const [imageUrl, setImageUrl] = useState<string | null>(null);
 	const fileInputRef = useRef<HTMLInputElement>(null);
-	const [isProcessing, setIsProcessing] = useState(false);
+	const [isProcessing, setIsProcessing] = useState(false); // 標記是否正在處理圖片
 
 	useEffect(() => {
 		async function loadModel() {
-			await tf.ready();
-			const loadedModel = await mobilenet.load();
+			await tf.ready(); // 確保 TensorFlow.js 已準備就緒
+			const loadedModel = await mobilenet.load(); // 加載 MobileNet 模型
 			setModel(loadedModel);
 		}
 		loadModel();
 	}, []);
 
+	// 處理圖片上傳
 	const handleImageUpload = async (
 		event: React.ChangeEvent<HTMLInputElement>
 	) => {
@@ -33,6 +33,7 @@ function App() {
 		}
 	};
 
+	// 處理上傳的圖片
 	const processImage = async (file: File) => {
 		if (model) {
 			setIsProcessing(true);
@@ -45,6 +46,7 @@ function App() {
 				const predictions = await getPrediction(img);
 				if (predictions && predictions.length > 0) {
 					const topPrediction = predictions[0];
+					console.log("predictions", predictions);
 					setPrediction({
 						breed: topPrediction.className,
 						probability: topPrediction.probability,
@@ -55,19 +57,23 @@ function App() {
 		}
 	};
 
+	// 使用模型進行預測
 	const getPrediction = async (imgElement: HTMLImageElement) => {
-		const tfImg = tf.browser.fromPixels(imgElement);
-		const resizedImg = tf.image.resizeBilinear(tfImg, [224, 224]);
-		const expandedImg = resizedImg.expandDims(0);
+		const tfImg = tf.browser.fromPixels(imgElement); // 將圖片轉換為 TensorFlow 張量
+		const resizedImg = tf.image.resizeBilinear(tfImg, [224, 224]); // 調整圖片大小
+		const expandedImg = resizedImg.expandDims(0); // 擴展維度
+		// 使用模型進行預測
 		const predictions = await model!.classify(
 			expandedImg as unknown as HTMLImageElement
 		);
+		// 釋放張量內存
 		tfImg.dispose();
 		resizedImg.dispose();
 		expandedImg.dispose();
 		return predictions;
 	};
 
+	// 重置狀態
 	const resetState = () => {
 		setImageUrl(null);
 		setPrediction(null);
